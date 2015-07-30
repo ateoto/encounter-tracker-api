@@ -13,6 +13,8 @@ import (
 
 var db *sql.DB
 
+var migrateUrl string
+
 var SigningKey = os.Getenv("ET_SIGNING_KEY")
 
 const (
@@ -28,6 +30,9 @@ func main() {
 	db_name := os.Getenv("ET_DB_NAME")
 
 	connection := fmt.Sprintf("host=%v sslmode=disable user=%v password=%v dbname=%v", db_host, db_user, db_pass, db_name)
+	migrateUrl = fmt.Sprintf("postgres://%v@%v/%v?sslmode=disable&password=%v", db_user, db_host, db_name, db_pass)
+
+	log.Printf(connection)
 
 	db, err = sql.Open("postgres", connection)
 	if err != nil {
@@ -35,6 +40,8 @@ func main() {
 	}
 
 	db.SetMaxIdleConns(100)
+
+	RunMigrations()
 
 	e := echo.New()
 
