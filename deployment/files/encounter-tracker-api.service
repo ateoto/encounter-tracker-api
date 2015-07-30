@@ -1,0 +1,10 @@
+[Unit]
+Description=Provides API for encounter-tracker application
+After=network.target
+
+[Service]
+Environment=ET_DB_HOST=localhost ET_DB_USER=etsa ET_DB_PASS=etsa_secret ET_DB_NAME=et ET_SIGNING_KEY=NotReallyASecret ET_MIGRATIONS=/vagrant/migrations
+ExecStart=/bin/bash -c '/usr/local/bin/encounter-tracker-api'
+
+[Install]
+WantedBy=multi-user.target
