@@ -39,3 +39,7 @@ pushd /vagrant/src/
 popd
 
 mv /vagrant/src/encounter-tracker-api /usr/local/bin/encounter-tracker-api
+
+systemctl enable encounter-tracker-api.service
+systemctl daemon-reload
+systemctl start encounter-tracker-api.service
