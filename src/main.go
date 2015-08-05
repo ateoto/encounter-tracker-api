@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -22,25 +21,7 @@ const (
 )
 
 func main() {
-	var err error
-
-	db_host := os.Getenv("ET_DB_HOST")
-	db_user := os.Getenv("ET_DB_USER")
-	db_pass := os.Getenv("ET_DB_PASS")
-	db_name := os.Getenv("ET_DB_NAME")
-
-	connection := fmt.Sprintf("host=%v sslmode=disable user=%v password=%v dbname=%v", db_host, db_user, db_pass, db_name)
-	migrateUrl = fmt.Sprintf("postgres://%v@%v/%v?sslmode=disable&password=%v", db_user, db_host, db_name, db_pass)
-
-	log.Printf(connection)
-
-	db, err = sql.Open("postgres", connection)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db.SetMaxIdleConns(100)
-
+	InitDB()
 	RunMigrations()
 
 	e := echo.New()
@@ -61,6 +42,7 @@ func main() {
 	m.Delete("/:id", DeleteMonster)
 
 	l := e.Group("/languages")
+	l.Use(JWTAuth(SigningKey))
 	l.Get("", LanguageIndex)
 	l.Post("", CreateLanguage)
 	l.Get("/:id", LanguageDetail)
@@ -88,5 +70,6 @@ func main() {
 		en.Delete("/:id", DeleteEncounter)
 	*/
 
+	log.Printf("Serving on port: 4242")
 	e.Run(":4242")
 }

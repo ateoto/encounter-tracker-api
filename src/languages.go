@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -43,25 +44,26 @@ func LanguageIndex(c *echo.Context) error {
 
 func CreateLanguage(c *echo.Context) error {
 	var language Language
-	standardBool := false
 
-	name := c.Form("name")
-	standard := c.Form("standard")
-	if standard != "" {
-		standardBool = true
+	jwt_claims, _ := c.Get("claims").(map[string]interface{})
+	user_id := jwt_claims["user_id"]
+
+	if err := json.NewDecoder(c.Request().Body).Decode(&language); err != nil {
+		log.Fatal(err)
 	}
 
-	err := db.QueryRow("INSERT INTO languages(name, standard) VALUES ($1, $2) RETURNING id", name, standardBool).Scan(&language.Id)
+	err := db.QueryRow("INSERT INTO languages(user, name, standard) VALUES ($1, $2, $3) RETURNING *", language.Name, language.Standard).Scan(user_id, &language.Id, &language.Name, &language.Standard)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = db.QueryRow("SELECT name, standard FROM languages WHERE id=$1", language.Id).Scan(&language.Name, &language.Standard)
-	if err != nil {
-		log.Printf("Fail on requery")
-		log.Fatal(err)
-	}
-
+	/*
+		err = db.QueryRow("SELECT name, standard FROM languages WHERE id=$1", language.Id).Scan(&language.Name, &language.Standard)
+		if err != nil {
+			log.Printf("Fail on requery")
+			log.Fatal(err)
+		}
+	*/
 	return c.JSON(http.StatusCreated, language)
 }
 
